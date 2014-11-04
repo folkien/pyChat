@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import os, datetime, glob, time
+from threading import Thread
 
 username = os.environ['USER']
 filename = "session@" + username
@@ -41,6 +42,25 @@ def send(data):
 	for user in users:
 			if user[18:] != username:
 				writefile(user,data)
+
+
+class cReadingProcess:
+    def __init__(self):
+        self._running = True
+
+    def terminate(self):
+        self._running = False
+
+    def run(self):
+        global actual_time
+        while self._running:
+			time.sleep(3)
+			if actual_time < modification_date("./session/" + filename):
+				text = readfile("./session/" + filename)
+				cleanfile("./session/" + filename)
+				actual_time = datetime.datetime.now()
+				print text
+
 ###################################################
 
 #pytanie o nazwe uzytkownika, jezeli taki user istnieje to ponownie pytamy
@@ -63,22 +83,17 @@ send("Użytkownik " + username + " zalogował się.\n")
 
 #teraz bedziemy cyklicznie czytac czy plik zostal zmodyfikowany
 inputtext = ""
-newpid = os.fork()
+ReadingProcess = cReadingProcess()
+threadReadingProcess = Thread(target=ReadingProcess.run)
+threadReadingProcess.start()
 while inputtext != "quit":
-	if newpid == 0:
-		# proces dziecka
-		time.sleep(3)
-		if actual_time < modification_date("./session/" + filename):
-			text = readfile("./session/" + filename)
-			cleanfile("./session/" + filename)
-			actual_time = datetime.datetime.now()
-			print text
-	else:
-		# proces rodzica
-		inputtext = raw_input()
-		send("<" + username + ">" +inputtext)
+	# proces rodzica
+	inputtext = raw_input()
+	send("<" + username + ">" +inputtext)
 
-#jeden watek co kilka sekund sprawdza czy plik zostal zmodyfikowany
+#zamykam watek czytajacy
+ReadingProcess.terminate()
+threadReadingProcess.join()
 
 #usuwam moj plik sesji
 os.remove("./session/" + filename)
