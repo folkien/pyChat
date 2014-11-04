@@ -94,6 +94,9 @@ while inputtext != "quit":
 ReadingProcess.terminate()
 threadReadingProcess.join()
 
+#wysylam informacje o wylogowaniu użytkownika
+send("Użytkownik " + username + " opuścił czat.\n")
+
 #usuwam moj plik sesji
 os.remove("./session/" + filename)
 
