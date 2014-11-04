@@ -2,9 +2,15 @@
 # -*- coding: utf-8 -*-
 import os, datetime, glob, time
 
+username = os.environ['USER']
+filename = "session@" + username
 
 #funkcje
 ###################################################
+def modification_date(filename):
+		    t = os.path.getmtime(filename)
+		    return datetime.datetime.fromtimestamp(t)
+
 def writefile(filename,data):
 	f = open(filename,'a')
 	while f.closed:
@@ -30,12 +36,12 @@ def readfile(filename):
 	return data
 
 def send(data):
+	global username
 	users = glob.glob("./session/session@*");
 	for user in users:
-			writefile(user,data)
+			if user[18:] != username:
+				writefile(user,data)
 ###################################################
-username = os.environ['USER']
-filename = "session@" + username
 
 #pytanie o nazwe uzytkownika, jezeli taki user istnieje to ponownie pytamy
 sessionExists = os.path.exists("./session/" + filename)
@@ -56,12 +62,24 @@ actual_time = datetime.datetime.now()
 send("Użytkownik " + username + " zalogował się.\n")
 
 #teraz bedziemy cyklicznie czytac czy plik zostal zmodyfikowany
-    
-#zapamietanie timestampa sesji
-
-#Petla while command != /quit
+inputtext = ""
+newpid = os.fork()
+while inputtext != "quit":
+	if newpid == 0:
+		# proces dziecka
+		time.sleep(3)
+		if actual_time < modification_date("./session/" + filename):
+			text = readfile("./session/" + filename)
+			cleanfile("./session/" + filename)
+			actual_time = datetime.datetime.now()
+			print text
+	else:
+		# proces rodzica
+		inputtext = raw_input()
+		send("<" + username + ">" +inputtext)
 
 #jeden watek co kilka sekund sprawdza czy plik zostal zmodyfikowany
 
-#inny watek czeka na input os user'a
+#usuwam moj plik sesji
+os.remove("./session/" + filename)
 
