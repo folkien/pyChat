@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import os, datetime, glob
+import os, datetime, glob, time
 
 
 #funkcje
@@ -8,6 +8,7 @@ import os, datetime, glob
 def writefile(filename,data):
 	f = open(filename,'a')
 	while f.closed:
+		time.sleep(1)
 		f = open(filename,'a')
 	f.write(data)
 	f.close()
@@ -15,12 +16,14 @@ def writefile(filename,data):
 def cleanfile(filename):
 	f = open(filename,'w')
 	while f.closed:
+		time.sleep(1)
 		f = open(filename,'w')
 	f.close()
 
 def readfile(filename):
 	f = open(filename,'r')
 	while f.closed:
+		time.sleep(1)
 		f = open(filename,'r')
 	data = f.read()
 	f.close()
