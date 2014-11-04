@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import os, datetime, glob, time
+import os, datetime, glob, time, sys
 from threading import Thread
 
 username = os.environ['USER']
@@ -59,7 +59,7 @@ class cReadingProcess:
 				text = readfile("./session/" + filename)
 				cleanfile("./session/" + filename)
 				actual_time = datetime.datetime.now()
-				print text
+				sys.stdout.write(text)
 
 ###################################################
 
@@ -67,8 +67,7 @@ class cReadingProcess:
 sessionExists = os.path.exists("./session/" + filename)
 while sessionExists:
     #To znaczy ze mamy juz uzytkownika o takiej nazwie.
-	print "Ops! Ktoś już ma taki login, musisz go zmienić na inny!\n"
-	username = raw_input("Podaj swoj nowy login:") 
+	username = raw_input("Ops! Ktoś już ma taki login, musisz go zmienić na inny!\nPodaj swoj nowy login:") 
 	filename = "session@" + username
 	sessionExists = os.path.exists("./session/" + filename)
 
@@ -89,7 +88,7 @@ threadReadingProcess.start()
 while inputtext != "quit":
 	# proces rodzica
 	inputtext = raw_input()
-	send("<" + username + ">" +inputtext)
+	send("<" + username + ">" +inputtext+ "\n")
 
 #zamykam watek czytajacy
 ReadingProcess.terminate()
