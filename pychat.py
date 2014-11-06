@@ -1,10 +1,28 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import os, datetime, glob, time, sys
+import os, datetime, glob, time, sys, platform
 from threading import Thread
 
-username = os.environ['USER']
-filename = "session@" + username
+
+class bcolors:
+    RED 	= '\033[91m'
+    GREEN 	= '\033[92m'
+    YELLOW 	= '\033[93m'
+    BLUE 	= '\033[94m'
+    MAGNETA = '\033[95m'
+    CYAN	= '\033[96m'
+    WHITE	= '\033[97m'
+    ENDC 	= '\033[0m'
+
+session_root = "./session/"
+
+if platform.system() != "Linux":
+		username = os.getlogin()
+		filename = "session@" + username
+else:
+		username = os.environ['USER']
+		filename = "session@" + username
+
 
 #funkcje
 ###################################################
@@ -38,11 +56,19 @@ def readfile(filename):
 
 def send(data):
 	global username
-	users = glob.glob("./session/session@*");
+	users = glob.glob(session_root + "/session@*");
 	for user in users:
 			if user[18:] != username:
-				writefile(user,data)
+				writefile(user,bcolors.YELLOW + data + bcolors.ENDC)
 
+def is_command(data):
+	if (len(data)!=0) and (data[0] == '/'):
+			return 1
+	else:
+			return 0
+
+def execute_command(data):
+	return 0
 
 class cReadingProcess:
     def __init__(self):
@@ -54,41 +80,45 @@ class cReadingProcess:
     def run(self):
         global actual_time
         while self._running:
-			time.sleep(3)
-			if actual_time < modification_date("./session/" + filename):
-				text = readfile("./session/" + filename)
-				cleanfile("./session/" + filename)
+			time.sleep(1)
+			if actual_time < modification_date(session_root + filename):
+				text = readfile(session_root + filename)
+				cleanfile(session_root + filename)
 				actual_time = datetime.datetime.now()
-				sys.stdout.write(text)
+				sys.stdout.write(text + bcolors.WHITE + bcolors.ENDC)
 
 ###################################################
 
 #pytanie o nazwe uzytkownika, jezeli taki user istnieje to ponownie pytamy
-sessionExists = os.path.exists("./session/" + filename)
+sessionExists = os.path.exists(session_root + filename)
 while sessionExists:
     #To znaczy ze mamy juz uzytkownika o takiej nazwie.
 	username = raw_input("Ops! Ktoś już ma taki login, musisz go zmienić na inny!\nPodaj swoj nowy login:") 
 	filename = "session@" + username
-	sessionExists = os.path.exists("./session/" + filename)
+	sessionExists = os.path.exists(session_root + filename)
 
 #tworzenie nowego pliku sesji
-cleanfile("./session/" + filename)
+cleanfile(session_root + filename)
 
 #aktualny timestamp
 actual_time = datetime.datetime.now()
 
 #wysylam informacje do innych uzytkownikow o zalogowaniu
 send("Użytkownik " + username + " zalogował się.\n")
+print bcolors.GREEN + "Zalogowałeś się do czatu jako " + username + ". Miłego czatowania! Aby zakończyć działanie programu wpisz /quit." + bcolors.ENDC
 
 #teraz bedziemy cyklicznie czytac czy plik zostal zmodyfikowany
 inputtext = ""
 ReadingProcess = cReadingProcess()
 threadReadingProcess = Thread(target=ReadingProcess.run)
 threadReadingProcess.start()
-while inputtext != "quit":
+while inputtext != "/quit":
 	# proces rodzica
 	inputtext = raw_input()
-	send("<" + username + ">" +inputtext+ "\n")
+	if is_command(inputtext):
+			execute_command(inputtext[1:])
+	else:
+			send("<" + username + ">" +inputtext+ "\n")
 
 #zamykam watek czytajacy
 ReadingProcess.terminate()
@@ -98,5 +128,5 @@ threadReadingProcess.join()
 send("Użytkownik " + username + " opuścił czat.\n")
 
 #usuwam moj plik sesji
-os.remove("./session/" + filename)
+os.remove(session_root + filename)
 
