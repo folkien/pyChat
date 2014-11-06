@@ -4,7 +4,7 @@ import os, datetime, glob, time, sys, platform
 from threading import Thread
 
 
-class bcolors:
+class colors:
     RED 	= '\033[91m'
     GREEN 	= '\033[92m'
     YELLOW 	= '\033[93m'
@@ -59,7 +59,7 @@ def send(data):
 	users = glob.glob(session_root + "/session@*");
 	for user in users:
 			if user[18:] != username:
-				writefile(user,bcolors.YELLOW + data + bcolors.ENDC)
+				writefile(user, data)
 
 def is_command(data):
 	if (len(data)!=0) and (data[0] == '/'):
@@ -85,7 +85,7 @@ class cReadingProcess:
 				text = readfile(session_root + filename)
 				cleanfile(session_root + filename)
 				actual_time = datetime.datetime.now()
-				sys.stdout.write(text + bcolors.WHITE + bcolors.ENDC)
+				sys.stdout.write(text)
 
 ###################################################
 
@@ -105,7 +105,7 @@ actual_time = datetime.datetime.now()
 
 #wysylam informacje do innych uzytkownikow o zalogowaniu
 send("Użytkownik " + username + " zalogował się.\n")
-print bcolors.GREEN + "Zalogowałeś się do czatu jako " + username + ". Miłego czatowania! Aby zakończyć działanie programu wpisz /quit." + bcolors.ENDC
+print colors.GREEN + "Zalogowałeś się do czatu jako " + username + ". Miłego czatowania! Aby zakończyć działanie programu wpisz /quit." + colors.ENDC
 
 #teraz bedziemy cyklicznie czytac czy plik zostal zmodyfikowany
 inputtext = ""
@@ -118,7 +118,7 @@ while inputtext != "/quit":
 	if is_command(inputtext):
 			execute_command(inputtext[1:])
 	else:
-			send("<" + username + ">" +inputtext+ "\n")
+			send("<" + colors.MAGNETA + username + colors.ENDC + ">" + colors.YELLOW + inputtext + colors.ENDC + "\n")
 
 #zamykam watek czytajacy
 ReadingProcess.terminate()
